@@ -4,7 +4,7 @@
 
   /**
    * Configuration for the notification source.
-   * @type {string}
+   * This URL points to the RAW JSON file content, which is required.
    */
   const NOTIFICATION_URL = 'https://raw.githubusercontent.com/toolnovanext/toolnova-notification/main/notification.json';
 
@@ -29,8 +29,8 @@
   container.style.transform = 'translateY(-100%)'; // Start off-screen
   container.style.visibility = 'hidden';
 
-  // Title element
-  const titleElement = document.createElement('h1');
+  // Title element (h2 for better semantic structure)
+  const titleElement = document.createElement('h2');
   titleElement.style.fontSize = '20px';
   titleElement.style.fontWeight = '600';
   titleElement.style.margin = '0 0 8px 0';
@@ -41,13 +41,6 @@
   contentElement.style.fontSize = '16px';
   contentElement.style.lineHeight = '1.5';
   contentElement.style.marginBottom = '16px';
-
-  // Error message element
-  const errorElement = document.createElement('div');
-  errorElement.setAttribute('role', 'alert');
-  errorElement.style.color = '#d32f2f';
-  errorElement.style.display = 'none';
-  errorElement.style.marginBottom = '12px';
 
   // Dismiss button
   const dismissButton = document.createElement('button');
@@ -72,7 +65,6 @@
   // --- Assemble Notification Structure ---
   container.appendChild(titleElement);
   container.appendChild(contentElement);
-  container.appendChild(errorElement);
   container.appendChild(dismissButton);
   document.body.prepend(container);
 
@@ -88,10 +80,6 @@
     // Use a timeout to allow the transition to complete before hiding
     setTimeout(() => {
       container.style.visibility = 'hidden';
-      // Clear content to prevent flash of old content on next load
-      titleElement.textContent = '';
-      contentElement.innerHTML = '';
-      errorElement.style.display = 'none';
     }, 300); // Must match the transition duration
   }
 
@@ -102,19 +90,6 @@
     container.style.visibility = 'visible';
     container.style.opacity = '1';
     container.style.transform = 'translateY(0)';
-  }
-
-  /**
-   * Shows an error message within the notification container.
-   * @param {string} message - The error message to display.
-   */
-  function showError(message) {
-    titleElement.textContent = '';
-    contentElement.innerHTML = '';
-    dismissButton.style.display = 'block'; // Ensure dismiss is visible for errors too
-    errorElement.textContent = `Error: ${message}`;
-    errorElement.style.display = 'block';
-    showNotification();
   }
 
   /**
@@ -131,7 +106,8 @@
       });
 
       if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        // This will trigger if the file is not found (404) or other network errors
+        throw new Error(`Network response was not ok: ${response.status}`);
       }
 
       const data = await response.json();
@@ -143,17 +119,14 @@
         // Since you control the notification.json file, this is acceptable.
         contentElement.innerHTML = data.content;
         
-        errorElement.style.display = 'none';
-        dismissButton.style.display = 'block';
         showNotification();
       } else {
         // If data is valid but content is empty, do nothing.
         console.log('Notification data is empty or malformed; not showing.');
       }
     } catch (error) {
-      console.warn('Failed to load notification:', error.message);
-      // You can optionally show a user-facing error here
-      // showError('Could not retrieve the latest notification.');
+      // This will catch network errors or JSON parsing errors
+      console.warn('Could not load notification:', error.message);
     }
   }
 
@@ -171,7 +144,8 @@
     }
   });
 
-  // Load the notification once the DOM is fully ready
+  // Load the notification once the DOM is fully ready.
+  // This ensures it only runs ONE TIME on page load.
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', loadNotification);
   } else {
