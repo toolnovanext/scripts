@@ -1,12 +1,3 @@
-/**
- * @file Standalone script for Toolnova Next's navigation, footer, and styling.
- * @description This script injects all necessary CSS, generates the header and footer,
- * and attaches event listeners for interactive elements like the navigation menu and theme toggler.
- * It is designed to be self-contained and run on any page it's included on.
- * @author Gemini
- * @version 2.0.0
- */
-
 (() => {
     'use strict';
 
@@ -186,7 +177,7 @@
                 background-color: #2c2c2c;
             }
 
-            /* Core Fix: Hide/Show Menus */
+
             .nav-menu.collapsed, .submenu.collapsed {
                 display: none;
             }
@@ -290,7 +281,7 @@
                 { text: 'Tool Fusion AI', href: 'https://toolnovanext.github.io/ToolFusion-AI/' },
                 { text: 'User Favorite Tools', href: 'https://toolnovanext.github.io/User-favourite/' },
             ]},
-            { type: 'link', text: 'Toolnova Blogs', href: 'https://toolnovanext.github.io/ToolNova-blog/' },
+            { type: 'link', text: 'Toolnova Blogs', href: 'https://toolnovanext.github.io/TOOLNOVA-BLOG/' },
             { type: 'link', text: 'Telegram Channel', href: 'https://t.me/swapnatamil' },
             { type: 'link', text: 'YouTube Channel', href: 'https://youtube.com/@accessibleresource' },
             { type: 'link', text: 'About', href: 'https://toolnovanext.github.io/about' },
@@ -326,22 +317,6 @@
         nav.appendChild(ul);
         header.appendChild(nav);
         document.body.prepend(header);
-    };
-
-    /**
-     * Creates the main content area for the page.
-     */
-    const createMainContent = () => {
-        if (document.getElementById('main')) return;
-        const main = document.createElement('main');
-        main.id = 'main';
-        main.setAttribute('role', 'main');
-        main.innerHTML = `
-            <h2>Main Content Area</h2>
-            <p>This is the main content of the page. The "Skip to main content" link will jump here.</p>
-        `;
-        // Insert after header
-        document.querySelector('header[role="banner"]').insertAdjacentElement('afterend', main);
     };
 
     /**
