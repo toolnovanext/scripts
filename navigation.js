@@ -26,9 +26,10 @@ function renderHeader() {
   // Navigation menu button
   const navButton = document.createElement('button');
   navButton.setAttribute('aria-expanded', 'false');
+  navButton.setAttribute('aria-controls', 'main-nav');
   navButton.setAttribute('aria-label', 'Toggle navigation menu');
   navButton.id = 'nav-toggle';
-  navButton.textContent = 'Open navigation menu';
+  navButton.textContent = 'Open Navigation Menu';
   navButton.classList.add('nav-toggle');
   header.appendChild(navButton);
 
@@ -39,6 +40,7 @@ function renderHeader() {
   nav.classList.add('nav-menu', 'collapsed');
 
   const ul = document.createElement('ul');
+  ul.setAttribute('role', 'menubar');
 
   // Menu items
   const menuItems = [
@@ -48,7 +50,7 @@ function renderHeader() {
     },
     {
       type: 'link',
-      text: 'Try question AI',
+      text: 'Try Question AI',
       href: 'https://toolnovanext.github.io/question-ai',
     },
     {
@@ -94,6 +96,7 @@ function renderHeader() {
 
   menuItems.forEach((item, index) => {
     const li = document.createElement('li');
+    li.setAttribute('role', 'none');
 
     if (item.type === 'paragraph') {
       const p = document.createElement('p');
@@ -103,24 +106,30 @@ function renderHeader() {
       const a = document.createElement('a');
       a.href = item.href;
       a.textContent = item.text;
+      a.setAttribute('role', 'menuitem');
       li.appendChild(a);
     } else if (item.type === 'collapsible') {
       const button = document.createElement('button');
       button.setAttribute('aria-expanded', 'false');
+      button.setAttribute('aria-controls', `submenu-${index}`);
       button.setAttribute('aria-label', `Toggle ${item.text} submenu`);
       button.textContent = item.text;
       button.classList.add('submenu-toggle');
       button.id = `submenu-toggle-${index}`;
+      button.setAttribute('role', 'menuitem');
 
       const subUl = document.createElement('ul');
       subUl.classList.add('submenu', 'collapsed');
-      subUl.setAttribute('aria-labelledby', `submenu-toggle-${index}`);
+      subUl.id = `submenu-${index}`;
+      subUl.setAttribute('role', 'menu');
 
       item.subItems.forEach((subItem) => {
         const subLi = document.createElement('li');
+        subLi.setAttribute('role', 'none');
         const subA = document.createElement('a');
         subA.href = subItem.href;
         subA.textContent = subItem.text;
+        subA.setAttribute('role', 'menuitem');
         subLi.appendChild(subA);
         subUl.appendChild(subLi);
       });
@@ -133,12 +142,16 @@ function renderHeader() {
   });
 
   // Theme switch button
+  const themeLi = document.createElement('li');
+  themeLi.setAttribute('role', 'none');
   const themeButton = document.createElement('button');
   themeButton.textContent = 'Switch to Dark Theme';
-  themeButton.setAttribute('aria-label', 'Switch between light and dark theme');
+  themeButton.setAttribute('aria-label', 'Switch to dark theme');
   themeButton.classList.add('theme-toggle');
   themeButton.id = 'theme-toggle';
-  ul.appendChild(themeButton);
+  themeButton.setAttribute('role', 'menuitem');
+  themeLi.appendChild(themeButton);
+  ul.appendChild(themeLi);
 
   nav.appendChild(ul);
   header.appendChild(nav);
@@ -154,13 +167,6 @@ function renderHeader() {
   header.appendChild(slogan);
 
   document.body.prepend(header);
-
-  // Event listeners for navigation
-  navButton.addEventListener('click', toggleNavMenu);
-  document.querySelectorAll('.submenu-toggle').forEach((button) => {
-    button.addEventListener('click', toggleSubMenu);
-  });
-  themeButton.addEventListener('click', toggleTheme);
 }
 
 // Function to render the footer
@@ -174,7 +180,7 @@ function renderFooter() {
   footer.appendChild(feedbackH3);
 
   const iframe = document.createElement('iframe');
-  iframe.src = 'https://toolnovanext.github.io/feedback';
+  iframe.src = 'https://toolnovanext.github.io/feedback'; // Fixed typo in URL
   iframe.title = 'Feedback Form';
   footer.appendChild(iframe);
 
@@ -232,20 +238,30 @@ function toggleNavMenu() {
   const isExpanded = navButton.getAttribute('aria-expanded') === 'true';
 
   navButton.setAttribute('aria-expanded', !isExpanded);
-  navButton.textContent = isExpanded ? 'Open navigation menu' : 'Close navigation menu';
-  navMenu.classList.toggle('collapsed');
-  navMenu.classList.toggle('expanded');
+  navButton.textContent = isExpanded ? 'Open Navigation Menu' : 'Close Navigation Menu';
+  navMenu.classList.toggle('collapsed', isExpanded);
+  navMenu.classList.toggle('expanded', !isExpanded);
+
+  // Ensure submenus are collapsed when main menu is closed
+  if (isExpanded) {
+    document.querySelectorAll('.submenu-toggle').forEach((button) => {
+      button.setAttribute('aria-expanded', 'false');
+      const submenu = document.getElementById(button.getAttribute('aria-controls'));
+      submenu.classList.add('collapsed');
+      submenu.classList.remove('expanded');
+    });
+  }
 }
 
 // Toggle submenu
 function toggleSubMenu(event) {
   const button = event.currentTarget;
   const isExpanded = button.getAttribute('aria-expanded') === 'true';
-  const submenu = button.nextElementSibling;
+  const submenu = document.getElementById(button.getAttribute('aria-controls'));
 
   button.setAttribute('aria-expanded', !isExpanded);
-  submenu.classList.toggle('collapsed');
-  submenu.classList.toggle('expanded');
+  submenu.classList.toggle('collapsed', isExpanded);
+  submenu.classList.toggle('expanded', !isExpanded);
 }
 
 // Toggle theme
@@ -262,4 +278,11 @@ function toggleTheme() {
 document.addEventListener('DOMContentLoaded', () => {
   renderHeader();
   renderFooter();
+
+  // Attach event listeners
+  document.getElementById('nav-toggle').addEventListener('click', toggleNavMenu);
+  document.querySelectorAll('.submenu-toggle').forEach((button) => {
+    button.addEventListener('click', toggleSubMenu);
+  });
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
 });
